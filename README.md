@@ -15,19 +15,19 @@ Enter all five values when prompted. The program displays a static plot and save
 
 | Input | Units | Valid values | Example |
 |---|---|---|---|
-| Horizontal distance | m | Positive | 600 |
+| Horizontal distance | m | Greater than 0 and less than 1200 | 600 |
 | Initial peak height | m | Positive | 30 |
-| Number of additional hills | count | Integer, at least 6 | 6 |
+| Total hills, including the initial peak | count | Integer, at least 5 | 5 |
 | Mass | kg | Positive | 500 |
 | Desired final speed | m/s | Strictly between 0 and 10 | 8 |
 
-The final height must be nonnegative. Actual track length must be between 300 and 1200 m. Invalid inputs or track lengths produce an explanation and restart all five prompts. Each new track gets new random hill heights, so its length also varies.
+All numeric inputs must be finite. The final height must be nonnegative. Actual track length must be between 300 and 1200 m. Each input is checked immediately; an invalid input produces an explanation and restarts all five prompts. An invalid track length also restarts all five prompts. Each new track gets new random hill heights, so its length also varies.
 
-Horizontal distance is the start-to-finish distance along the x-axis. Actual track length follows the curves and is longer.
+Horizontal distance is the start-to-finish distance along the x-axis and must be less than 1200 m. Actual track length follows the curves and must separately be between 300 and 1200 m, inclusive.
 
 ## Track construction
 
-The initial peak is at 10% of the horizontal distance, followed by a valley at 20%. Additional peaks and valleys alternate through 85%, ending with a valley. Their horizontal section widths are random weights between 0.5 and 1.5, scaled to fill that portion of the track. The remaining distance is the final ascent. Each additional peak is sampled uniformly between zero and the initial peak height, excluding endpoints. Each valley is then sampled between zero and the lower of its two neighbors, excluding endpoints. This keeps every valley below both neighboring peaks while varying its elevation. If the finish is at ground level, the last valley must also be zero. No fixed random seed is used.
+The initial peak is at 10% of the horizontal distance, followed by a valley at 20%. The entered total includes this peak, so the track has one fewer additional peaks. Additional peaks and valleys alternate through 85%, ending with a valley. Their horizontal section widths are random weights between 0.5 and 1.5, scaled to fill that portion of the track. The remaining distance is the final ascent; the finish is not counted as a hill. Each additional peak is sampled uniformly between zero and the initial peak height, excluding endpoints. Each valley is then sampled between zero and the lower of its two neighbors, excluding endpoints. This keeps every valley below both neighboring peaks while varying its elevation. If the finish is at ground level, the last valley must also be zero. No fixed random seed is used.
 
 For endpoints (x0, y0) and (x1, y1), each piece uses:
 
@@ -56,7 +56,7 @@ Mass changes potential and kinetic energy. It cancels out of the speed equation 
 
 ## Example and verification
 
-For inputs 600, 30, 6, 500, and 8:
+For inputs 600, 30, 5, 500, and 8:
 
 - Maximum potential energy: 147150.00 J.
 - Final kinetic energy: 16000.00 J.
@@ -64,7 +64,7 @@ For inputs 600, 30, 6, 500, and 8:
 - Final height: approximately 26.7380 m.
 - Track length, hill heights, valley heights, and section widths vary each run.
 
-Verification covers random hill bounds, joins and zero slopes, energy conservation after release, mass scaling, invalid inputs, rejection of short/long tracks, and length convergence when sampling resolution doubles. The saved example plot is generated from these five inputs.
+Track geometry and length vary because each run generates a new random track.
 
 
 ## Code structure

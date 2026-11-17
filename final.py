@@ -11,49 +11,72 @@ def section(x, x1, x2, y1, y2):
     return y1 + (y2 - y1)/2 * (1 - np.cos(np.pi * (x - x1)/(x2 - x1)))
 
 #inputs and track length check
+print("Welcome to the Rollercoaster generator!!")
 while True:
     try:
-        distance = float(input("Horizontal distance (m): "))
-        height = float(input("Initial peak height (m): "))
-        hills = int(input("Number of additional hills (at least 6): "))
-        mass = float(input("Mass (kg): "))
-        speed = float(input("Desired final speed (m/s, between 0 and 10): "))
+        distance = float(input("\nHorizontal start-to-finish distance (m; greater than 0; curved track must be 300-1200 m): "))
     except ValueError:
-        print("Enter numbers only, with a whole number for the hill count.")
+        print("Distance must be a finite number greater than 0. Restarting all inputs.")
+        continue
+    if not np.isfinite(distance) or distance <= 0 or distance >= 1200:
+        print("Distance must be a finite number greater than 0 and less than 1200. Restarting all inputs.")
         continue
 
-    if not np.all(np.isfinite([distance, height, mass, speed])):
-        print("Enter finite numbers.")
+    try:
+        height = float(input("Initial peak height above ground (m; greater than 0): "))
+    except ValueError:
+        print("Height must be a finite number greater than 0. Restarting all inputs.")
         continue
-    if distance <= 0 or height <= 0 or mass <= 0:
-        print("Distance, height, and mass must be positive.")
+    if not np.isfinite(height) or height <= 0:
+        print("Height must be a finite number greater than 0. Restarting all inputs.")
         continue
-    if hills < 6:
-        print("There must be at least six additional hills.")
+
+    try:
+        hills = int(input("Total hills, including the initial peak (whole number; at least 5): "))
+    except ValueError:
+        print("Total hills must be a whole number of at least 5. Restarting all inputs.")
         continue
-    if speed <= 0 or speed >= 10:
-        print("Final speed must be greater than 0 and less than 10 m/s.")
+    if hills < 5:
+        print("Total hills must be a whole number of at least 5. Restarting all inputs.")
+        continue
+
+    try:
+        mass = float(input("Car mass (kg; greater than 0): "))
+    except ValueError:
+        print("Mass must be a finite number greater than 0. Restarting all inputs.")
+        continue
+    if not np.isfinite(mass) or mass <= 0:
+        print("Mass must be a finite number greater than 0. Restarting all inputs.")
+        continue
+
+    try:
+        speed = float(input("Desired speed at the finish (m/s; greater than 0 and less than 10): "))
+    except ValueError:
+        print("Final speed must be a finite number greater than 0 and less than 10 m/s. Restarting all inputs.")
+        continue
+    if not np.isfinite(speed) or speed <= 0 or speed >= 10:
+        print("Final speed must be a finite number greater than 0 and less than 10 m/s. Restarting all inputs.")
         continue
 
     final_height = height - speed**2/(2*g)
     if final_height < 0:
-        print("Final height would be below ground. Increase height or decrease speed.")
+        print("Final height would be below ground. Increase height or decrease speed. Restarting all inputs.")
         continue
 
     #random widths for the hills between 20% and 85% of the distance
     widths = []
-    for n in range(2*hills):
+    for n in range(2*(hills - 1)):
         widths.append(np.random.uniform(0.5, 1.5))
     total_width = sum(widths)
 
     x_points = [0, 0.1 * distance, 0.2 * distance]
-    for n in range(2*hills):
+    for n in range(2*(hills - 1)):
         x_points.append(x_points[-1] + 0.65 * distance * widths[n]/total_width)
     x_points.append(distance)
 
     #random peak heights, all below the initial peak
     y_points = [0, height, 0]
-    for n in range(hills):
+    for n in range(hills - 1):
         hill_height = np.random.uniform(0, height)
         while hill_height <= 0 or hill_height >= height:
             hill_height = np.random.uniform(0, height)
@@ -119,7 +142,7 @@ final_ke = mass * g * (height - final_height)
 final_speed = np.sqrt(2 * final_ke/mass)
 
 print(f"\nActual track length: {length:.2f} m")
-print(f"Total Bumps: {hills + 1}")
+print(f"Total hills (including initial peak): {hills}")
 print(f"Maximum potential energy: {max_pe:.2f} J")
 print(f"Final kinetic energy: {final_ke:.2f} J")
 print(f"Calculated final speed: {final_speed:.4f} m/s")
@@ -137,8 +160,8 @@ plt.ylim(-0.08 * height, 1.65 * height)
 plt.legend(loc="upper left")
 
 #results above the track
-results = (f"Track length: {length:.2f} m\nTotal Bumps: {hills + 1}\nMass: {mass:g} kg\n"
-           f"Maximum PE: {max_pe:.2f} J\nFinal KE: {final_ke:.2f} J\n"
+results = (f"Track length: {length:.2f} m\nTotal hills (including initial peak): {hills}\nMass: {mass:g} kg\n"
+           f"Maximum PE: {max_pe/1000:.2f} kJ\nFinal KE: {final_ke/1000:.2f} kJ\n"
            f"Final speed: {final_speed:.2f} m/s")
 plt.text(distance, 1.6 * height, results, ha="right", va="top")
 plt.tight_layout()
